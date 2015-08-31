@@ -41,7 +41,8 @@ $SDIR/bin/GetBaseCounts \
     --vcf $SNPS \
     --maq $MAPQ --baq $BASEQ --cov $MINCOV \
     --bam $BAM \
+    --compress_output \
     --out $OFILE
 
-gzip -9 $OFILE
+## gzip -9 $OFILE
 
