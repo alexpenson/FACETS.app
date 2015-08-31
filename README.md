@@ -49,3 +49,5 @@ output files for both iterations are retained
 
 The tumor depth and allele counts are normalized to remove the dependence of the log-ratio on normal depth, using a lowess fit. This is designed to remove the "waterfall" effect produced when degraded tumor DNA with small fragment size means that SNPs adjacent to target exons are consistently covered less well in the tumor than in the normal.
 
+
+Thanks to Zeng Zhang for GetBaseCounts https://github.com/zengzheng123/GetBaseCounts
