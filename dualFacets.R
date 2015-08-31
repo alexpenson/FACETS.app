@@ -42,7 +42,7 @@ parser$add_argument("-n","--ndepth",type="integer",default=35,help="threshold fo
 parser$add_argument("-m","--min_nhet",type="integer",default=25,
     help="minimum number of heterozygote snps in a segment used for bivariate t-statistic during clustering of segments")
 
-parser$add_argument("-pc","--purity_cval",type="integer",default=50,help="critical value for segmentation")
+parser$add_argument("-pc","--purity_cval",type="integer",default=-99,help="critical value for segmentation")
 parser$add_argument("-ps","--purity_snp_nbhd",type="integer",default=250,help="window size")
 parser$add_argument("-pn","--purity_ndepth",type="integer",default=35,help="threshold for depth in the normal sample")
 parser$add_argument("-pm","--purity_min_nhet",type="integer",default=25,
@@ -53,15 +53,19 @@ parser$add_argument("--genome",type="character",default="hg19",help="Genome of c
 parser$add_argument("file",nargs=1,help="Paired Counts File")
 args=parser$parse_args()
 
-NDEPTH=args$ndepth
-SNP_NBHD=args$snp_nbhd
 CVAL=args$cval
+SNP_NBHD=args$snp_nbhd
+NDEPTH=args$ndepth
 MIN_NHET=args$min_nhet
 
-PURITY_NDEPTH=args$purity_ndepth
-PURITY_SNP_NBHD=args$purity_snp_nbhd
 PURITY_CVAL=args$purity_cval
+PURITY_SNP_NBHD=args$purity_snp_nbhd
+PURITY_NDEPTH=args$purity_ndepth
 PURITY_MIN_NHET=args$purity_min_nhet
+
+if(PURITY_CVAL==-99){
+    PURITY_CVAL=NULL
+}
 
 FILE=args$file
 DIPLOGR=args$dipLogR
@@ -146,5 +150,13 @@ facets_iteration <- function(CVAL = CVAL,
     return(fit$dipLogR)
 }
 
-estimated_dipLogR <- facets_iteration(PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET)
-                     facets_iteration(       CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
+if(!is.null(PURITY_CVAL)){
+    estimated_dipLogR <- facets_iteration(PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET)
+### ... and use it for a second run of FACETS
+    facets_iteration(       CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
+} else {
+### if "PURITY_CVAL" is not specified, run FACETS only once, with dipLogR taken from the arguments
+     facets_iteration(       CVAL, DIPLOGR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
+}
+    
+
