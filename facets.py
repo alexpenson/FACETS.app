@@ -48,6 +48,7 @@ def runlsf(args):
     2) merge two counts files with threshold on normal depth
     3) run facets on merged counts"""
 
+    print args
     ### check for Matched_Norm_Sample_Barcode, if column exists then use it...
         
     cmd_list = list()
@@ -113,15 +114,21 @@ def runlsf(args):
 
         ### DO FACETS
         doFacets_cmd = ('bsub -We 59 -o LSF/ -e Err/ -J facets_%s %s '
-                        '%s/bin/doFacets.R %s %s %s')
-        doFacets_cmd = doFacets_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, " ".join(args.facets_args), countsMerged_file, Tumor_Sample_Barcode)
+                        '%s/bin/doFacets.R %s %s %s %s')
+        doFacets_cmd = doFacets_cmd % (Tumor_Sample_Barcode,
+                                       wait_string,
+                                       SDIR,
+                                       " ".join(args.facets_args),
+                                       countsMerged_file,
+                                       Tumor_Sample_Barcode,
+                                       args.outputdir)
         cmd_list.append(doFacets_cmd)
         
         ### EXECUTE COMMANDS
 
         ### make output directories for the project
         make_sure_path_exists("counts")
-        make_sure_path_exists("cval_50")
+        make_sure_path_exists(args.outputdir)
 
         for facets_run in pairs_dict:
             ### MAKE OUTPUT FOLDER FOR EACH facets_run
@@ -174,9 +181,10 @@ if __name__ =='__main__':
 
     ### ./facets.py run
     parser_runlsf = subparsers.add_parser('runlsf', help='create LSF commands to run FACETS from bam files')
+    parser.add_argument('-o', '--outputdir',help='directory for output files',action='store', default='output')
     parser_runlsf.add_argument('pairs_file', type=argparse.FileType('r'), 
-                            help=('Tumor/Normal pairs file: must contain columns '  
-                                  'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
+                               help=('Tumor/Normal pairs file: must contain columns '  
+                                     'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
     ### remaining arguments are sent to doFacets.R
     parser_runlsf.add_argument('facets_args', nargs=argparse.REMAINDER) 
     parser_runlsf.set_defaults(func=runlsf)

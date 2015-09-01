@@ -50,8 +50,9 @@ parser$add_argument("-pm","--purity_min_nhet",type="integer",default=25,
 
 parser$add_argument("-d","--dipLogR",type="double",default=-99,help="diploid log ratio")
 parser$add_argument("--genome",type="character",default="hg19",help="Genome of counts file")
-parser$add_argument("file",nargs=1,help="Paired Counts File")
+parser$add_argument("counts_file",nargs=1,help="Paired Counts File")
 parser$add_argument("TAG",nargs=1,help="output prefix")
+parser$add_argument("directory",nargs=1,help="output prefix")
 args=parser$parse_args()
 
 CVAL=args$cval
@@ -68,8 +69,9 @@ if(PURITY_CVAL==-99){
     PURITY_CVAL=NULL
 }
 
-FILE=args$file
+COUNTS_FILE=args$counts_file
 TAG=args$TAG
+DIRECTORY=args$directory
 DIPLOGR=args$dipLogR
 if(DIPLOGR==-99){
     DIPLOGR=NULL
@@ -96,57 +98,55 @@ switch(args$genome,
     }
 )
 
-facets_iteration <- function(FILE = FILE,
+facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
                              TAG = TAG,
+                             DIRECTORY = DIRECTORY,
                              CVAL = CVAL,
                              DIPLOGR = DIPLOGR,
                              NDEPTH = NDEPTH,
                              SNP_NBHD = SNP_NBHD,
                              MIN_NHET = MIN_NHET){
 
-    ## TAG=paste("facets",projectName,tumorName,normalName,"cval",CVAL,sep="__")
-    ## TAG1=cc(projectName,tumorName,normalName)
-    
     pre.CVAL=CVAL
-    dat=preProcSample(FILE,snp.nbhd=SNP_NBHD,cval=pre.CVAL,chromlevels=chromLevels,ndepth=NDEPTH)
+    dat=preProcSample(COUNTS_FILE,snp.nbhd=SNP_NBHD,cval=pre.CVAL,chromlevels=chromLevels,ndepth=NDEPTH)
     
     out=procSample(dat,cval=CVAL,min.nhet=MIN_NHET,dipLogR=DIPLOGR)
     
-    CairoPNG(file=cc(TAG,".BiSeg.png"),height=1000,width=800)
+    CairoPNG(file=paste0(DIRECTORY, "/", TAG,".BiSeg.png"),height=1000,width=800)
     plotSample(out,chromlevels=chromLevels)
     text(-.08,-.08,paste(TAG,"cval =",CVAL),xpd=T,pos=4)
     dev.off()
     
                                         #fit=emcncf(out$jointseg,out$out,dipLogR=out$dipLogR) OLD
     fit=emcncf(out) # NEW
-    out$IGV=formatSegmentOutput(out,TAG1)
-    save(out,fit,file=cc(TAG,".Rdata"),compress=T)
-    write.table(out$IGV,file=cc(TAG,'.seg'),row.names=F,quote=F,sep="\t") #NEW
+    out$IGV=formatSegmentOutput(out,TAG)
+    save(out,fit,file=paste0(DIRECTORY, "/", TAG,".Rdata"),compress=T)
+    write.table(out$IGV,file=paste0(DIRECTORY, "/", TAG,'.seg'),row.names=F,quote=F,sep="\t") #NEW
     
-    ff=cc(TAG,".out")
-    cat("# TAG =",TAG,"\n",file=ff)
-    cat("# Version =",version,"\n",file=ff,append=T)
-    cat("# Input =",basename(FILE),"\n",file=ff,append=T)
-    cat("# snp.nbhd =",SNP_NBHD,"\n",file=ff,append=T)
-    cat("# cval =",CVAL,"\n",file=ff,append=T)
-    cat("# min.nhet =",MIN_NHET,"\n",file=ff,append=T)
-    cat("# genome =",args$genome,"\n",file=ff,append=T)
-    ## cat("# Project =",projectName,"\n",file=ff,append=T)
-    ## cat("# Tumor =",tumorName,"\n",file=ff,append=T)
-    ## cat("# Normal =",normalName,"\n",file=ff,append=T)
-    cat("# Purity =",fit$purity,"\n",file=ff,append=T)
-    cat("# Ploidy =",fit$ploidy,"\n",file=ff,append=T)
-    cat("# dipLogR =",fit$dipLogR,"\n",file=ff,append=T)
-    cat("# dipt =",fit$dipt,"\n",file=ff,append=T)
-    cat("# loglik =",fit$loglik,"\n",file=ff,append=T)
+    ff=paste0(DIRECTORY, "/", TAG,".out")
+    cat("# TAG ="        ,TAG                   ,"\n" ,file=ff)
+    cat("# Version ="    ,version               ,"\n" ,file=ff ,append=T)
+    cat("# Input ="      ,basename(COUNTS_FILE) ,"\n" ,file=ff ,append=T)
+    cat("# snp.nbhd ="   ,SNP_NBHD              ,"\n" ,file=ff ,append=T)
+    cat("# cval ="       ,CVAL                  ,"\n" ,file=ff ,append=T)
+    cat("# min.nhet ="   ,MIN_NHET              ,"\n" ,file=ff ,append=T)
+    cat("# genome ="     ,args$genome           ,"\n" ,file=ff ,append=T)
+    ## cat("# Project =" ,projectName           ,"\n" ,file=ff ,append=T)
+    ## cat("# Tumor ="   ,tumorName             ,"\n" ,file=ff ,append=T)
+    ## cat("# Normal ="  ,normalName            ,"\n" ,file=ff ,append=T)
+    cat("# Purity ="     ,fit$purity            ,"\n" ,file=ff ,append=T)
+    cat("# Ploidy ="     ,fit$ploidy            ,"\n" ,file=ff ,append=T)
+    cat("# dipLogR ="    ,fit$dipLogR           ,"\n" ,file=ff ,append=T)
+    cat("# dipt ="       ,fit$dipt              ,"\n" ,file=ff ,append=T)
+    cat("# loglik ="     ,fit$loglik            ,"\n" ,file=ff ,append=T)
     
     write.xls(cbind(out$IGV[,1:4],fit$cncf[,2:ncol(fit$cncf)]),
-              cc(TAG,"cncf.txt"),row.names=F)
+              paste0(DIRECTORY, "/", TAG,".cncf.txt"),row.names=F)
     
-    CairoPNG(file=cc(TAG,"CNCF.png"),height=1100,width=850)
+    CairoPNG(file=paste0(DIRECTORY, "/", TAG,".CNCF.png"),height=1100,width=850)
                                         #plotSampleCNCF(out$jointseg,out$out,fit)
     plotSampleCNCF.custom(out$jointseg,out$out,fit,
-                          main=paste(projectName,"[",tumorName,normalName,"]","cval =",CVAL))
+                          main=paste(TAG,"cval =",CVAL))
     
     dev.off()
 
@@ -154,12 +154,13 @@ facets_iteration <- function(FILE = FILE,
 }
 
 if(!is.null(PURITY_CVAL)){
-    estimated_dipLogR <- facets_iteration(FILE, TAG, PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET)
+### if "PURITY_CVAL" is specified, run FACETS twice. Take dipLogR from the first run...
+    estimated_dipLogR <- facets_iteration(COUNTS_FILE, TAG, DIRECTORY, PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET)
 ### ... and use it for a second run of FACETS
-                         facets_iteration(FILE, TAG,        CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
+                         facets_iteration(COUNTS_FILE, TAG, DIRECTORY,        CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
 } else {
 ### if "PURITY_CVAL" is not specified, run FACETS only once, with dipLogR taken from the arguments
-                         facets_iteration(FILE, TAG,        CVAL,            DIPLOGR,       NDEPTH,        SNP_NBHD,        MIN_NHET)
+                         facets_iteration(COUNTS_FILE, TAG, DIRECTORY,        CVAL,            DIPLOGR,       NDEPTH,        SNP_NBHD,        MIN_NHET)
 }
     
 
