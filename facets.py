@@ -111,7 +111,7 @@ def runlsf(args):
                                        " ".join(args.facets_args),
                                        countsMerged_file,
                                        Tumor_Sample_Barcode,
-                                       args.outputdir)
+                                       args.outputdir + "/" + Tumor_Sample_Barcode)
         cmd_list.append(doFacets_cmd)
         
     ### EXECUTE COMMANDS
@@ -122,7 +122,7 @@ def runlsf(args):
 
     for facets_run in pairs_dict:
         ### MAKE OUTPUT FOLDER FOR EACH facets_run
-        make_sure_path_exists("cval_50/" + Tumor_Sample_Barcode)
+        make_sure_path_exists(args.outputdir + "/" + Tumor_Sample_Barcode)
         
     for cmd in cmd_list:
         subprocess.call(["echo", cmd])
