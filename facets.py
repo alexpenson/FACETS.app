@@ -124,20 +124,20 @@ def runlsf(args):
                                        args.outputdir)
         cmd_list.append(doFacets_cmd)
         
-        ### EXECUTE COMMANDS
+    ### EXECUTE COMMANDS
 
-        ### make output directories for the project
-        make_sure_path_exists("counts")
-        make_sure_path_exists(args.outputdir)
+    ### make output directories for the project
+    make_sure_path_exists("counts")
+    make_sure_path_exists(args.outputdir)
 
-        for facets_run in pairs_dict:
-            ### MAKE OUTPUT FOLDER FOR EACH facets_run
-            make_sure_path_exists("cval_50/" + Tumor_Sample_Barcode)
-            
-        for cmd in cmd_list:
-            subprocess.call(["echo", cmd])
-            subprocess.call(cmd, shell=True)
-            #os.system(cmd)
+    for facets_run in pairs_dict:
+        ### MAKE OUTPUT FOLDER FOR EACH facets_run
+        make_sure_path_exists("cval_50/" + Tumor_Sample_Barcode)
+        
+    for cmd in cmd_list:
+        subprocess.call(["echo", cmd])
+        subprocess.call(cmd, shell=True)
+        #os.system(cmd)
 
 def fromcounts(args):
     ### BUILD COMMAND LIST
