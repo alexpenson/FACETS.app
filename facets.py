@@ -1,4 +1,4 @@
-!/opt/common/CentOS_6-dev/python/python-2.7.10/bin/python
+#!/opt/common/CentOS_6-dev/python/python-2.7.10/bin/python
 
 import argparse, os, sys, re, subprocess, itertools, errno, csv
 ## import cmo
