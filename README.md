@@ -2,21 +2,20 @@
 
 ## Version 0.9.5 (2015.08.30)
 
-Wrapper script which takes a tumor/normal BAM pair then
+Wrapper script which takes a tab-delimited file `tumor_normal_pairs.txt` listing input BAM files.
+It must contain columns Tumor_Sample_Barcode, t_bamfile & n_bamfile. 
 
 * counts the base coverage over SNPs
-
 * creates a join tumor/normal counts file
-
 * runs facets
+* gene level calling
+* annotation of maf files with local copy number information
+
 
 usage::
 ```bash
-
-usage:: FACETS.app/run.sh NORMALBAM TUMORBAM
-   or:: FACETS.app/run.sh NORMALBAM TUMORBAM TAG -c 50
-
-Arguments after TAG are passed to doFacets.R
+usage:: facets.py runlsf tumor_normal_pairs.txt
+remaining arguments are passed to doFacets.R
 ```
 
 ## Updates
