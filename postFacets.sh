@@ -25,8 +25,9 @@ echo "CVAL=$CVAL"
 ODIR=Cval_${CVAL}
 mkdir $ODIR
 
-~/opt/bin/convert facets_*${PROJNO}_*BiSeg.png $ODIR/facets__${PROJNO}__Cval_${CVAL}__BiSeg.pdf
-~/opt/bin/convert facets_*${PROJNO}_*CNCF.png $ODIR/facets__${PROJNO}__Cval_${CVAL}__CNCF.pdf
+export PATH=$PATH:/home/socci/opt/bin
+convert facets_*${PROJNO}_*BiSeg.png $ODIR/facets__${PROJNO}__Cval_${CVAL}__BiSeg.pdf
+convert facets_*${PROJNO}_*CNCF.png $ODIR/facets__${PROJNO}__Cval_${CVAL}__CNCF.pdf
 
 mkdir $ODIR/rdata
 Rscript --no-save ~/Code/Pipelines/FACETS/v3/FACETS/facets2igv.R
