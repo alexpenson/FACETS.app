@@ -171,12 +171,13 @@ if __name__ =='__main__':
 
     ### ./facets.py run
     parser_runlsf = subparsers.add_parser('runlsf', help='create LSF commands to run FACETS from bam files')
-    parser.add_argument('-o', '--outputdir',help='directory for output files',action='store', default='output')
+    parser_runlsf.add_argument('-o', '--outputdir',action='store', default='output',
+                               help='directory for output files')
     parser_runlsf.add_argument('pairs_file', type=argparse.FileType('r'), 
                                help=('Tumor/Normal pairs file: must contain columns '  
                                      'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
-    ### remaining arguments are sent to doFacets.R
-    parser_runlsf.add_argument('facets_args', nargs=argparse.REMAINDER) 
+    parser_runlsf.add_argument('facets_args', nargs=argparse.REMAINDER,
+                               help='remaining arguments are sent to doFacets.R') 
     parser_runlsf.set_defaults(func=runlsf)
 
     
@@ -184,8 +185,8 @@ if __name__ =='__main__':
     parser_fromcounts = subparsers.add_parser('fromcounts', help='run FACETS from merged counts files')
     parser_fromcounts.add_argument('counts_files', nargs = '*', type=argparse.FileType('r'), 
                                help='merge counts files counts/countsMerged__*.dat.gz')
-    ### remaining arguments are sent to doFacets.R
-    parser_fromcounts.add_argument('facets_args', nargs=argparse.REMAINDER) 
+    parser_fromcounts.add_argument('facets_args', nargs=argparse.REMAINDER,
+                                   help='remaining arguments are sent to doFacets.R') 
     parser_fromcounts.set_defaults(func=fromcounts)
 
     # ### ./facets.py norm
