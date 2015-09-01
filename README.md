@@ -13,10 +13,10 @@ It must contain columns Tumor_Sample_Barcode, t_bamfile & n_bamfile.
 
 
 usage::
-```bash
-usage:: facets.py runlsf tumor_normal_pairs.txt
+
+    facets.py runlsf tumor_normal_pairs.txt --cval 50
+
 remaining arguments are passed to doFacets.R
-```
 
 ## Updates
 
