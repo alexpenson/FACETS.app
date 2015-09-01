@@ -1,6 +1,6 @@
 #!/opt/common/CentOS_6-dev/python/python-2.7.10/bin/python
 
-import argparse, os, sys, re, subprocess, itertools, errno, csv
+import argparse, os, sys, re, subprocess, itertools, errno, csv, gzip
 ## import cmo
 
 SDIR = os.path.dirname(os.path.realpath(__file__))
@@ -82,7 +82,7 @@ def runlsf(args):
 
         wait_string = '' ### string to add to later bsub commands
 
-        counts_cmd = ('bsub -We 59 -o Log/ -e Err/ -J %s_count_%s -R "rusage[mem=40]" ' 
+        counts_cmd = ('bsub -We 59 -o LSF/ -e Err/ -J %s_count_%s -R "rusage[mem=40]" ' 
                       '%s/bin/getBaseCountsZZAutoWithName.sh %s %s')
         
         if not n_countsfile_exists and not countsMerged_file_exists:
@@ -98,14 +98,14 @@ def runlsf(args):
         
         ### MERGE COUNTS
         if not countsMerged_file_exists:
-            merge_cmd = ('bsub -We 59 -o Log/ -e Err/ -n 2 -R "rusage[mem=60]" -J merge_%s %s '
+            merge_cmd = ('bsub -We 59 -o LSF/ -e Err/ -n 2 -R "rusage[mem=60]" -J merge_%s %s '
                          '"%s/bin/mergeTN.R %s %s | gzip -9 -c > %s"')
             merge_cmd = merge_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, t_countsfile, n_countsfile, countsMerged_file)
             cmd_list.append(merge_cmd)
             wait_string = '-w "post_done(merge_%s)"' % (Tumor_Sample_Barcode)
         
         # ### NORM COUNTS
-        # norm_cmd = ('bsub -We 59 -o Log/ -e Err/ -n 2 -R "rusage[mem=60]" -J norm_%s %s '
+        # norm_cmd = ('bsub -We 59 -o LSF/ -e Err/ -n 2 -R "rusage[mem=60]" -J norm_%s %s '
         #              '"%s/bin/norm_normal_depth.R %s | gzip -9 -c > %s"')
         # norm_cmd = norm_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, countsMerged_file, countsMerged_file_norm)
         # cmd_list.append(norm_cmd)
@@ -113,8 +113,8 @@ def runlsf(args):
 
         ### DO FACETS
         doFacets_cmd = ('bsub -We 59 -o LSF/ -e Err/ -J facets_%s %s '
-                        '%s/bin/doFacets.R %s %s')
-        doFacets_cmd = doFacets_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, " ".join(args.facets_args), countsMerged_file)
+                        '%s/bin/doFacets.R %s %s %s')
+        doFacets_cmd = doFacets_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, " ".join(args.facets_args), countsMerged_file, Tumor_Sample_Barcode)
         cmd_list.append(doFacets_cmd)
         
         ### EXECUTE COMMANDS
