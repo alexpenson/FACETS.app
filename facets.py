@@ -1,4 +1,4 @@
-#!/opt/common/CentOS_6-dev/python/python-2.7.10/bin/python
+!/opt/common/CentOS_6-dev/python/python-2.7.10/bin/python
 
 import argparse, os, sys, re, subprocess, itertools, errno, csv
 ## import cmo
@@ -34,15 +34,12 @@ def slugify(value):
     return(value)
 
 
-def fromcounts(args):
-    print "run " + SDIR + "/bin/doFacets.R"
-
-def run(args):
-    """read pairs file and for each line do:
+def runlsf(args):
+    """read pairs file and for each line create LSF commands to:
     1) counts SNP position in tumor and normal bam files
     2) merge two counts files with threshold on normal depth
     3) run facets on merged counts"""
-    
+
     ### check for Matched_Norm_Sample_Barcode, if column exists then use it...
         
     cmd_list = list()
@@ -75,7 +72,7 @@ def run(args):
         ### GET BASE COUNTS
         
         counts_cmd = ('bsub -We 59 -o Log/ -e Err/ -J %s_count_%s -R "rusage[mem=40]" ' 
-                      '%s/getBaseCountsZZAutoWithName.sh %s %s')
+                      '%s/bin/getBaseCountsZZAutoWithName.sh %s %s')
         
         n_counts_cmd = counts_cmd % ("n", Tumor_Sample_Barcode, SDIR, n_countsfile, n_bamfile)
         cmd_list.append(n_counts_cmd)
@@ -84,14 +81,28 @@ def run(args):
         
         
         ### MERGE COUNTS
-        wait_string = ''
-        ##        wait_string = '-w "post_done(*_count_%s)"' % (Tumor_Sample_Barcode)
+        ## wait_string = ''
+        wait_string = '-w "post_done(*_count_%s)"' % (Tumor_Sample_Barcode)
         
         merge_cmd = ('bsub -We 59 -o Log/ -e Err/ -n 2 -R "rusage[mem=60]" -J merge_%s %s '
-                     '"%s/mergeTN.R %s %s | gzip -9 -c > %s"')
+                     '"%s/bin/mergeTN.R %s %s | gzip -9 -c > %s"')
         merge_cmd = merge_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, t_countsfile, n_countsfile, countsMerged_file)
         cmd_list.append(merge_cmd)
 
+        # ### NORM COUNTS
+        # norm_cmd = ('bsub -We 59 -o Log/ -e Err/ -n 2 -R "rusage[mem=60]" -J norm_%s %s '
+        #              '"%s/bin/norm_normal_depth.R %s | gzip -9 -c > %s"')
+        # norm_cmd = norm_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, countsMerged_file, countsMerged_file_norm)
+        # cmd_list.append(norm_cmd)
+
+
+        ### DO FACETS
+        wait_string = '-w "post_done(merge_%s)"' % (Tumor_Sample_Barcode)
+        doFacets_cmd = ('bsub -We 59 -o LSF/ -e Err/ -J facets_%s %s '
+                        '%s/bin/doFacets.R %s %s')
+        
+        doFacets_cmd = doFacets_cmd % (Tumor_Sample_Barcode, wait_string, SDIR, " ".join(args.facets_args), countsMerged_file)
+        cmd_list.append(doFacets_cmd)
         
         ### EXECUTE COMMANDS
 
@@ -105,9 +116,17 @@ def run(args):
             
         for cmd in cmd_list:
             # ###            subprocess.call(cmd) ### why doesn't this work?
-            subprocess.call(["echo", cmd])
+            subprocess.call(cmd.split(" "))
             #os.system(cmd)
 
+def fromcounts(args):
+    print "run " + SDIR + "/bin/doFacets.R"
+    
+# def norm(args):
+#     print "run " + SDIR + "/bin/norm_normal_depth.R"
+            
+def check(args):
+    print "check output files"
 
 def call(args):
     print "call genes"
@@ -130,23 +149,34 @@ if __name__ =='__main__':
     parser = argparse.ArgumentParser(description="run FACETS analysis")
     subparsers = parser.add_subparsers(help='sub-command help')
 
-    ### facets.py run
-    parser_run = subparsers.add_parser('run', help='run FACETS from bam files')
-    parser_run.add_argument('pairs_file', type=argparse.FileType('r'), 
+    ### ./facets.py run
+    parser_runlsf = subparsers.add_parser('runlsf', help='create LSF commands to run FACETS from bam files')
+    parser_runlsf.add_argument('pairs_file', type=argparse.FileType('r'), 
                             help=('Tumor/Normal pairs file: must contain columns '  
                                   'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
-    parser_run.set_defaults(func=run)
-    ### optional aruments: cval ndepth etc.    
+    ### remaining arguments are sent to doFacets.R
+    parser_runlsf.add_argument('facets_args', nargs=argparse.REMAINDER) 
+    parser_runlsf.set_defaults(func=runlsf)
 
-    ### facets.py fromcounts
-    parser_fromcounts = subparsers.add_parser('fromcounts', help='extract SNP fromcounts from bam files')
+    
+    ### ./facets.py fromcounts
+    parser_fromcounts = subparsers.add_parser('fromcounts', help='run FACETS from merged counts files')
     parser_fromcounts.add_argument('counts_files', nargs = '*', type=argparse.FileType('r'), 
-                               help=('Tumor/Normal pairs file: must contain columns '  
-                                     'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
+                               help='merge counts files counts/countsMerged__*.dat.gz')
+    ### remaining arguments are sent to doFacets.R
+    parser_fromcounts.add_argument('facets_args', nargs=argparse.REMAINDER) 
     parser_fromcounts.set_defaults(func=fromcounts)
-    ### optional aruments: cval ndepth etc.    
+
+    # ### ./facets.py norm
+    # parser_norm = subparsers.add_parser('norm', help='run FACETS from merged counts files')
+    # parser_norm.add_argument('counts_files', nargs = '*', type=argparse.FileType('r'), 
+    #                            help='merge counts files counts/countsMerged__*.dat.gz')
+    # ### remaining arguments are sent to doFacets.R
+    # parser_norm.set_defaults(func=norm)
+
 
     args = parser.parse_args()
+##    print args
     args.func(args)
     
 
