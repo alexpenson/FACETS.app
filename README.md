@@ -2,47 +2,35 @@
 
 ## Version 0.9.5 (2015.08.30)
 
-Wrapper script which takes a tab-delimited file `tumor_normal_pairs.txt` listing input BAM files.
+Single wrapper script `facets.py` which takes a tab-delimited file `tumor_normal_pairs.txt` listing input BAM files.
 It must contain columns Tumor_Sample_Barcode, t_bamfile & n_bamfile. 
 
 * counts the base coverage over SNPs
 * creates a join tumor/normal counts file
 * runs facets
+
+The same wrapper script also does:
+* checking of output
 * gene level calling
 * annotation of maf files with local copy number information
 
+## FACETS results from bam files
 
 usage::
-```bash
-usage:: facets.py runlsf tumor_normal_pairs.txt
+
+    ./facets.py runlsf tumor_normal_pairs.txt --cval 50
+
 remaining arguments are passed to doFacets.R
-```
 
-## Updates
 
-* Gene Level calling: get_gene_level_calls.R
+## Gene Level calling
 
 usage:
 
-    ./get_gene_level_calls.R output_file.txt *_cncf.txt
-
-output:
+    ./facets.py calls tumor_normal_pairs.txt
 
 a text file listing, for each input cncf.txt file and each IMPACT341 gene, the integer copy number, TCGA-style copy number (-2, -1, 0, 1, 2) as well as more advanced copy number calling, including CNLOH for example.
 
-* dualFacets.R -  runs FACETS twice with two sets of input parameters dipLogR from the first iteration is used for the second
-
-usage:
-
-    ./dualFacets.R --purity_cval 300 --cval 100 countsMerged.dat.gz
-
-output:
-
-output files for both iterations are retained
-
-* run.sh no longer recounts if counts files already present; can call it to re-run facets instead of calling doFacets.R directly. 
-
-* ```--ndepth``` (```-n```) option added to ```doFacets.R``` added: reduction to 25 recommended by Venkat for high sensitivity
 
 * Waterfall supression from A. Penson
 
