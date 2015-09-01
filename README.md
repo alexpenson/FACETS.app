@@ -18,7 +18,7 @@ The same wrapper script also does:
 
 usage::
 
-    facets.py runlsf tumor_normal_pairs.txt --cval 50
+    ./facets.py runlsf tumor_normal_pairs.txt --cval 50
 
 remaining arguments are passed to doFacets.R
 
