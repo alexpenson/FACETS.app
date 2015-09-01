@@ -34,7 +34,7 @@ MINCOV=0
 BASEQ=20
 MAPQ=15
 
-$SDIR/bin/GetBaseCounts \
+$SDIR/GetBaseCounts \
     --filter_improper_pair \
     --sort_output \
     --fasta $GENOME \
