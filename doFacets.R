@@ -73,7 +73,7 @@ switch(args$genome,
     }
 )
 
-pre.CVAL=50
+pre.CVAL=CVAL
 dat=preProcSample(FILE,snp.nbhd=SNP_NBHD,cval=pre.CVAL,chromlevels=chromLevels,ndepth=NDEPTH)
 
 out=procSample(dat,cval=CVAL,min.nhet=MIN_NHET,dipLogR=DIPLOGR)
