@@ -3,6 +3,9 @@
 import argparse, os, sys, re, subprocess, itertools, errno, csv
 ## import cmo
 
+SDIR = os.path.dirname(os.path.realpath(__file__))
+
+
 # def make_sure_path_exists(path):
 #     """
 #     http://stackoverflow.com/questions/273192/in-python-check-if-a-directory-exists-and-create-it-if-necessary
@@ -31,14 +34,15 @@ def slugify(value):
     return(value)
 
 
+def fromcounts(args):
+    print "run " + SDIR + "/bin/doFacets.R"
+
 def run(args):
     """read pairs file and for each line do:
     1) counts SNP position in tumor and normal bam files
     2) merge two counts files with threshold on normal depth
     3) run facets on merged counts"""
     
-    SDIR = os.path.dirname(os.path.realpath(__file__))
-
     ### check for Matched_Norm_Sample_Barcode, if column exists then use it...
         
     cmd_list = list()
@@ -103,24 +107,45 @@ def run(args):
             # ###            subprocess.call(cmd) ### why doesn't this work?
             subprocess.call(["echo", cmd])
             #os.system(cmd)
-            
+
+
+def call(args):
+    print "call genes"
+
+def merge(args):
+    print "run " + SDIR + "/bin/postFacets.sh"
+    
+def maf(args):
+    print "run JoinFACETS2maf"
+
+
+        
+
         
 
 if __name__ =='__main__':
 
     ### ARGUMENTS
 
-    parser = argparse.ArgumentParser(description="run FACETS")
+    parser = argparse.ArgumentParser(description="run FACETS analysis")
     subparsers = parser.add_subparsers(help='sub-command help')
 
     ### facets.py run
-    parser_run = subparsers.add_parser('run', help='run help')
+    parser_run = subparsers.add_parser('run', help='run FACETS from bam files')
     parser_run.add_argument('pairs_file', type=argparse.FileType('r'), 
                             help=('Tumor/Normal pairs file: must contain columns '  
                                   'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
     parser_run.set_defaults(func=run)
     ### optional aruments: cval ndepth etc.    
-    
+
+    ### facets.py fromcounts
+    parser_fromcounts = subparsers.add_parser('fromcounts', help='extract SNP fromcounts from bam files')
+    parser_fromcounts.add_argument('counts_files', nargs = '*', type=argparse.FileType('r'), 
+                               help=('Tumor/Normal pairs file: must contain columns '  
+                                     'Tumor_Sample_Barcode, t_bamfile & n_bamfile, tab-delimited'))
+    parser_fromcounts.set_defaults(func=fromcounts)
+    ### optional aruments: cval ndepth etc.    
+
     args = parser.parse_args()
     args.func(args)
     
