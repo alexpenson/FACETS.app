@@ -13,23 +13,13 @@
 ### than in the normal.
 ###
 ### Usage: 
-### ./norm_normal_depth.R countsMerged.dat.gz
-###
-### creates file:
-### countsMerged.norm_normal_depth.dat.gz
+### ./norm_normal_depth.R countsMerged.dat.gz | gzip -c > countsMerged.norm_normal_depth.dat.gz
 ### 
 ### Alex Penson <pensona@mskcc.org>
 ###
 
 
 library(data.table)
-
-write.maf <- function(...){
-  write.table(..., quote = F, 
-              col.names=T, 
-              row.names=F, 
-              sep='\t')
-}
 
 
 
@@ -70,8 +60,13 @@ normalize_facets_depth <- function(filename){
   ## write.maf(countsMerged_merge, gz)
 
   output_filename <- gsub(".dat.gz$", ".norm_normal_depth.dat", filename)
-  write.maf(countsMerged_merge, output_filename)
-  system(paste0("gzip -f ", output_filename))
+
+  write.table(countsMerged_merge, file=stdout(), 
+              quote = F, 
+              col.names = T, 
+              row.names = F, 
+              sep = "\t")
+###  system(paste0("gzip -f ", output_filename))
 }
 
 if(!interactive()){
