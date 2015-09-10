@@ -25,13 +25,6 @@ source(file.path(getSDIR(),"funcs.R"))
 source(file.path(getSDIR(),"fPlots.R"))
 source(file.path(getSDIR(),"nds.R"))
 
-buildData=installed.packages()["facets",]
-cat("#Module Info\n")
-for(fi in c("Package","LibPath","Version","Built")){
-    cat("#",paste(fi,":",sep=""),buildData[fi],"\n")
-}
-version=buildData["Version"]
-cat("\n")
 
 library(argparse)
 parser=ArgumentParser()
@@ -65,17 +58,11 @@ PURITY_SNP_NBHD=args$purity_snp_nbhd
 PURITY_NDEPTH=args$purity_ndepth
 PURITY_MIN_NHET=args$purity_min_nhet
 
-if(PURITY_CVAL==-99){
-    PURITY_CVAL=NULL
-}
 
 COUNTS_FILE=args$counts_file
 TAG=args$TAG
 DIRECTORY=args$directory
 DIPLOGR=args$dipLogR
-if(DIPLOGR==-99){
-    DIPLOGR=NULL
-}
 ## BASE=basename(FILE)
 ## BASE=gsub("countsMerged____","",gsub(".dat.*","",BASE))
 
@@ -84,7 +71,34 @@ if(DIPLOGR==-99){
 ## normalName=sampleNames[2]
 ## projectName=gsub("_indel.*","",strsplit(BASE,"____")[[1]])[1]
 
-switch(args$genome,
+GENOME=args$genome
+
+facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
+                             TAG = TAG,
+                             DIRECTORY = DIRECTORY,
+                             CVAL = CVAL,
+                             DIPLOGR = DIPLOGR,
+                             NDEPTH = NDEPTH,
+                             SNP_NBHD = SNP_NBHD,
+                             MIN_NHET = MIN_NHET,
+                             GENOME = GENOME){
+
+    if(PURITY_CVAL==-99){
+        PURITY_CVAL=NULL
+    }
+    if(DIPLOGR==-99){
+        DIPLOGR=NULL
+    }
+    
+    buildData=installed.packages()["facets",]
+    cat("#Module Info\n")
+    for(fi in c("Package","LibPath","Version","Built")){
+        cat("#",paste(fi,":",sep=""),buildData[fi],"\n")
+    }
+    version=buildData["Version"]
+    cat("\n")
+
+    switch(args$genome,
     hg19={
         data(hg19gcpct)
         chromLevels=c(1:22, "X")
@@ -97,15 +111,6 @@ switch(args$genome,
         stop(paste("Invalid Genome",args$genome))
     }
 )
-
-facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
-                             TAG = TAG,
-                             DIRECTORY = DIRECTORY,
-                             CVAL = CVAL,
-                             DIPLOGR = DIPLOGR,
-                             NDEPTH = NDEPTH,
-                             SNP_NBHD = SNP_NBHD,
-                             MIN_NHET = MIN_NHET){
 
     pre.CVAL=CVAL
     dat=preProcSample(COUNTS_FILE,snp.nbhd=SNP_NBHD,cval=pre.CVAL,chromlevels=chromLevels,ndepth=NDEPTH)
@@ -153,14 +158,17 @@ facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
     return(fit$dipLogR)
 }
 
+
+print(PURITY_CVAL)
+
 if(!is.null(PURITY_CVAL)){
 ### if "PURITY_CVAL" is specified, run FACETS twice. Take dipLogR from the first run...
-    estimated_dipLogR <- facets_iteration(COUNTS_FILE, TAG, DIRECTORY, PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET)
+    estimated_dipLogR <- facets_iteration(COUNTS_FILE, paste0(TAG, "_purity"), DIRECTORY, PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET, GENOME)
 ### ... and use it for a second run of FACETS
-                         facets_iteration(COUNTS_FILE, TAG, DIRECTORY,        CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET)
+                         facets_iteration(COUNTS_FILE, paste0(TAG, "_hisens"), DIRECTORY,        CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET, GENOME)
 } else {
 ### if "PURITY_CVAL" is not specified, run FACETS only once, with dipLogR taken from the arguments
-                         facets_iteration(COUNTS_FILE, TAG, DIRECTORY,        CVAL,            DIPLOGR,       NDEPTH,        SNP_NBHD,        MIN_NHET)
+                         facets_iteration(COUNTS_FILE, TAG, DIRECTORY,        CVAL,            DIPLOGR,       NDEPTH,        SNP_NBHD,        MIN_NHET, GENOME)
 }
     
 
