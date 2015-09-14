@@ -144,6 +144,8 @@ facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
     cat("# dipLogR ="    ,fit$dipLogR           ,"\n" ,file=ff ,append=T)
     cat("# dipt ="       ,fit$dipt              ,"\n" ,file=ff ,append=T)
     cat("# loglik ="     ,fit$loglik            ,"\n" ,file=ff ,append=T)
+    cat("# output flags\n"                            ,file=ff ,append=T)
+    cat(paste0("# ", out$flags, "\n"), sep=""         ,file=ff ,append=T)    
     
     write.xls(cbind(out$IGV[,1:4],fit$cncf[,2:ncol(fit$cncf)]),
               paste0(DIRECTORY, "/", TAG,".cncf.txt"),row.names=F)
