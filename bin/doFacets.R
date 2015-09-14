@@ -89,6 +89,17 @@ facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
     if(DIPLOGR==-99){
         DIPLOGR=NULL
     }
+
+    cat("COUNTS_FILE =", COUNTS_FILE, "\n")
+    cat("TAG =", TAG, "\n")
+    cat("DIRECTORY =", DIRECTORY, "\n")
+    cat("CVAL =", CVAL, "\n")
+    cat("DIPLOGR =", DIPLOGR, "\n")
+    cat("NDEPTH =", NDEPTH, "\n")
+    cat("SNP_NBHD =", SNP_NBHD, "\n")
+    cat("MIN_NHET =", MIN_NHET, "\n")
+    cat("GENOME =", GENOME, "\n")
+    
     
     buildData=installed.packages()["facets",]
     cat("#Module Info\n")
@@ -144,6 +155,8 @@ facets_iteration <- function(COUNTS_FILE = COUNTS_FILE,
     cat("# dipLogR ="    ,fit$dipLogR           ,"\n" ,file=ff ,append=T)
     cat("# dipt ="       ,fit$dipt              ,"\n" ,file=ff ,append=T)
     cat("# loglik ="     ,fit$loglik            ,"\n" ,file=ff ,append=T)
+    cat("# output flags\n"                            ,file=ff ,append=T)
+    cat(paste0("# ", out$flags, "\n"), sep=""         ,file=ff ,append=T)    
     
     write.xls(cbind(out$IGV[,1:4],fit$cncf[,2:ncol(fit$cncf)]),
               paste0(DIRECTORY, "/", TAG,".cncf.txt"),row.names=F)
@@ -164,6 +177,7 @@ print(PURITY_CVAL)
 if(!is.null(PURITY_CVAL)){
 ### if "PURITY_CVAL" is specified, run FACETS twice. Take dipLogR from the first run...
     estimated_dipLogR <- facets_iteration(COUNTS_FILE, paste0(TAG, "_purity"), DIRECTORY, PURITY_CVAL,           DIPLOGR, PURITY_NDEPTH, PURITY_SNP_NBHD, PURITY_MIN_NHET, GENOME)
+    estimated_dipLogR <- ifelse(is.null(estimated_dipLogR), -99, estimated_dipLogR) ### if the fit fails (dipLogR is null), then take a second attempt
 ### ... and use it for a second run of FACETS
                          facets_iteration(COUNTS_FILE, paste0(TAG, "_hisens"), DIRECTORY,        CVAL, estimated_dipLogR,        NDEPTH,        SNP_NBHD,        MIN_NHET, GENOME)
 } else {
