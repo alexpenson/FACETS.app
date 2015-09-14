@@ -22,8 +22,8 @@ getSDIR <- function(){
 }
 
 ### get IMPACT341 loci and gene names
-msk_impact_341 <- scan(file.path(getSDIR(), "data", "cv3_hg19_gene_impact341.list"), what="")
-IMPACT341_targets <- fread(paste0('grep -v "^@" ', getSDIR(), '/data/cv3_hg19_picard_targets.interval_list'))
+msk_impact_341 <- scan(file.path(getSDIR(), "../data", "cv3_hg19_gene_impact341.list"), what="")
+IMPACT341_targets <- fread(paste0('grep -v "^@" ', getSDIR(), '/../data/cv3_hg19_picard_targets.interval_list'))
 setnames(IMPACT341_targets, c("chr", "start", "end", "strand", "name"))
 setkey(IMPACT341_targets, chr, start, end)
 
